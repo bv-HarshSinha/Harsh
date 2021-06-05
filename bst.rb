@@ -1,8 +1,11 @@
+require_relative "./bst_driver.rb"
+require_relative "./node.rb"
+
 class TreeNode
   attr_accessor :value, :left, :right
 
   def initialize(value)
-    @value = value
+    super value
     @left = nil
     @right = nil
   end
@@ -58,14 +61,17 @@ class BST
     return curr_node.value
   end
 
-  def inorder
-   return inorder_rec(@root)
+  def inorder()
+    values = []
+    inorder_rec(@root,values)
+    return values
   end
 
- def inorder_rec(root)
+ def inorder_rec(root,values)
   if root != nil
     inorder_rec(root.left)
     print "#{root.value} "
+    values << root.value
     inorder_rec(root.right)
   end
  end
@@ -85,7 +91,9 @@ class BST
   end
 
   def postorder
-   return postorder_rec(@root)
+    values = []
+    postorder_rec(@root)
+    return values
   end
 
   def postorder_rec(root)
@@ -93,6 +101,7 @@ class BST
       postorder_rec(root.left)
       postorder_rec(root.right)
       print "#{root.value} "
+      values << root.value
     end
   end
 
@@ -215,43 +224,13 @@ class BST
 
 end
 
-
-def choices
-  puts "
-Select a number
-
-1. Add elements into the tree(multiple elements comma separated)
-2. Print the largest element
-3. Print the smallest element
-4. Print Inorder, postorder, level order, and preorder traversal
-5. Search an element
-6. Remove an element
-7. Print all the paths i.e starting from root to the leaf
-8. load BST from file.
-9. Save Tree
-10. Quit
-    "
-end
-
-def choice_selector(bst, choice)
+def bst_print(bst, choice)
   case choice
-
   when 1
-    puts "Elements(can be multiple elements but with comma separated)"
-    temp = gets.chomp.split(',')
-    elements = []
-    temp.each{|val| elements << val.to_i} #convert into integer
-    elements.each{|val| bst.insert(val)}
+    puts "All paths are: "
+    bst.all_path
 
   when 2
-    val = bst.largest
-    if val == nil
-      puts "Tree is empty"
-    else
-      puts "#{val} is largest"
-    end
-
-  when 3
     val = bst.smallest
     if val == nil
       puts "Tree is empty"
@@ -259,46 +238,116 @@ def choice_selector(bst, choice)
       puts "#{val} is smallest"
     end
 
+  when 3
+    val = bst.largest
+    if val == nil
+      puts "Tree is empty"
+    else
+      puts "#{val} is largest"
+    end
+
   when 4
-    puts "Inorder"
-    bst.inorder
-    puts "\nPreorder"
+    puts "PREORDER"
     bst.preorder
-    puts "\nPostorder"
-    bst.postorder
-    puts "\nLevelorder"
-    bst.level_order
+    puts
 
   when 5
-    puts "Element to be found: "
-    val = gets.chomp.to_i
-    bst.find(val)
+    puts "POSTORDER"
+    bst.postorder
+    puts
 
   when 6
+    puts "INORDER"
+    bst.inorder
+    puts
+
+  when 7
+    puts "LEVELORDER"
+    bst.level_order
+    puts
+
+  end
+end
+
+def bst_modify(bst, choice)
+  case choice
+
+  when 1
+    puts "Enter elements to be inserted in binary search tree(comma separated)"
+    temp = gets.chomp.split(',')
+    elements = []
+    temp.each{|val| elements << val.to_i} #convert into integer
+    elements.each{|val| bst.insert(val)}
+
+  when 2
     print "Element to be removed: "
     val = gets.chomp.to_i
     bst.remove(val)
 
-  when 7
-    puts "All paths are: "
-    bst.all_path
-
-  when 8
-    bst.load
-
-  when 9
-    bst.save
   end
 end
 
+def bst_search(bst, choice)
+  case choice
 
-bst = BST.new
+  when 1
+    puts "Element to be found: "
+    val = gets.chomp.to_i
+    bst.find(val)
 
-while true
-  choices
-  choice = gets.chomp.to_i
-  if choice == 10
-    break
   end
-  choice_selector(bst,choice)
+end
+
+def spec_menu(bst, values, prev_choice)
+
+  values.each_with_index do |(key, val), index|
+    if index != 0
+      print key, '. ', val
+      puts
+    end
+  end
+
+  choice = gets.chomp.to_i
+  #puts "#{prev_choice}"
+  case prev_choice
+
+  when 1
+    bst_print(bst, choice)
+
+  when 2
+    bst_modify(bst, choice)
+
+  when 3
+    bst_search(bst, choice)
+
+  end
+end
+
+def bst_choices(bst)
+
+  OPERATIONS_HASH_BST.each do |key, val|
+    val.each do |key1, val1|
+      print key, '. ', val1
+      puts
+      break
+    end
+  end
+  print "Enter the choice: "
+  choice = gets.chomp.to_i
+  puts
+
+  OPERATIONS_HASH_BST.each do |key, val|
+    if key.to_i == choice
+      #puts "step 1"
+      spec_menu(bst, val, choice)
+      break
+    end
+  end
+end
+
+def main_bst
+  bst = BST.new
+  while true
+    bst_choices(bst)
+  end
 end
